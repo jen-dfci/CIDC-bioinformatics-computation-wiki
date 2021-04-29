@@ -1,0 +1,116 @@
+# How to run WES automator
+** Author: Jen Altreuter, modified from documents created by Gali Bai and Len Taing
+
+**Pre-requisites:**
+
+1. CIDC Google Cloud account- see "Getting started on google cloud"
+2. An ssh key generated on the google cloud -- see "Generating an ssh key on google cloud".
+3. software:
+   a. git- read https://git-scm.com/book/en/v2/Getting-Started-Installing-Git
+   b. miniconda3- information on how to install and use miniconda3 can be found here: https://docs.conda.io/en/latest/miniconda.html
+
+
+### PART 0. Initial setup
+
+NOTE: these steps only need to be performed once.  If you completed PART 0 previously, move on to PART 1.
+
+1. EMAIL your **gcloud** ssh key to Len Taing.  Ask him to add your key for WES: 
+    
+    See ""Generating an ssh key on google cloud" if you have not yet generated your ssh key.
+    
+    attach both ~/Download/ida_rsa and ida_rsa.pub in the email
+    
+2. Set up wes automator conda environment
+
+    a. clone the wes automator repository to your local computer or server:
+
+      ```bash
+      git clone git@bitbucket.org:plumbers/wes_automator
+      ```
+   
+    b. build the wes_automator conda environment and activate it:
+
+      ```bash
+      cd wes_automator
+      mamba env create -f wes_automator_env.yml
+      source activate wes_automator
+      ```
+
+### PART 1. Running wes_automator.py
+
+In this section we're going to run the test example that is found in the
+wes_automator source code. It will create an instance called
+'wes-auto-fast-test'.
+
+1. Check if there are any updates for the wes_automator.
+    
+    In your local wes_automator directory:
+    
+    ``` bash
+    git pull git@bitbucket.org:plumbers/wes_automator
+    ```
+    
+2. Set up your run parameters in the config.yaml.
+
+  In your local wes_automator source code directory, you will find a file called
+   'test.config.yaml'
+   
+  a. copy over template:
+  NOTE: in this example we're going to name our wes_automator conf file `test.config.yaml`
+
+  b. Edit test.config.yaml:
+
+  - instance_name:
+      define the instance name- any arbitrary string but cannot contain '.'
+  - cores:
+      define the number of cores for the instance--default is 32
+  - disk_size:
+      define the size of the attached disk
+  - google_bucket_path:
+      define the google bucket path to store the results when run is complete
+  - wes_ref_snapshot:
+      define which version of wes reference snapshot to use
+  - (optional) wes_commit:
+      define the exact chips commit version to use
+  - samples:
+      define the sample names and the google bucket paths to their fastqs
+  -  metasheet:
+      define run name and replicates
+
+2. Run wes automator:
+
+  ```bash
+  ./wes_automator.py -c test.config.yaml -u [your google cloud username--usually your hostname] -k ~/.ssh/google_cloud_engine
+
+  E.g. ./wes_automator.py -c test.config.yaml -u galib -k ~/.ssh/google_cloud_enging
+
+  #wes automator should run successfully, it will print diagnostic messages  until it finishes.  If you encounter an error, please send the output of
+  #wes automator to Len.
+  ```
+NOTE: -c is where you specify the chips automator config file
+
+
+The final line should look like this-
+
+"""
+The instance is running at the following IP: 35.243.249.170
+please log into this instance and to check-in on the run
+"""
+
+***COPY the IP address for use in the next step***
+
+3. Log into the instance to check on the run:
+
+```bash
+ssh -i ~/.ssh/google_cloud_engine [username]@[ip addr from last line of wes_automator]
+cd /mnt/ssd/wes
+check the state of the wes run by looking at /mnt/ssd/wes/nohup.out
+```
+
+### PART 3. WHEN the run is complete:
+NOTE: this is a VERY important part of the process, otherwise the instance
+is wasting money
+1. Delete the instance:
+   a. goto: https://console.cloud.google.com/compute/instances?organizationId=636937865278&project=cidc-biofx&instancessize=50
+   b. select "wes-auto-fast-test" instance and then click the trash can
+      icon at the top of the screen

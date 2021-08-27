@@ -18,7 +18,13 @@ Upload your ~/.ssh/google_compute_engine key to the automator instance.
 gcloud compute scp ~/.ssh/google_cloud_engine <username>@{username}-automator-instance:~/.ssh/ --tunnel-through-iap
 ```
 
-## Step 2. The environment has already been added onto the automator VM image.  Activate it to check that is working:
+## Step 2. Log into the instance
+
+```bash
+gcloud compute ssh --tunnel-through-iap username@{username}-automator-instance
+```
+
+## Step 3. The environment has already been added onto the automator VM image.  Activate it to check that is working:
 
 ```bash
 export CONDA_ROOT=/home/aashna/miniconda3
